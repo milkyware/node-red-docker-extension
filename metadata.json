@@ -1,0 +1,13 @@
+{
+  "icon": "node-red.svg",
+  "ui": {
+    "dashboard-tab": {
+      "title": "Node-RED",
+      "src": "index.html",
+      "root": "/ui"
+    }
+  },
+  "vm": {
+    "composefile": "docker-compose.yml"
+  }
+}

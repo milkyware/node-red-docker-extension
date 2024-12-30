@@ -1,0 +1,30 @@
+name: Extension CI
+
+on:
+  push:
+    paths: 
+      - Dockerfile
+      - docker-compose.yml
+      - metadata.json
+      - ui/**/*.*
+  pull_request: 
+  workflow_dispatch: 
+
+env:
+  IMAGE_NAME: "node-red-docker-extension"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Docker Build
+        id: docker-build
+        shell: pwsh
+        run: |
+          docker build . -t ${{env.IMAGE_NAME}}

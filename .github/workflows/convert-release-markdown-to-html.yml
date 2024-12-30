@@ -1,0 +1,48 @@
+name: Convert Release Markdown to HTML
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  # Push image to GitHub Packages.
+  # See also https://docs.docker.com/docker-hub/builds/
+  job:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Convert MD to HTML
+        id: convert-md-to-html
+        shell: pwsh
+        run: |
+          if ($env:ACTIONS_RUNNER_DEBUG)
+          {
+            $DebugPreference = 'Continue'
+            $VerbosePreference = 'Continue'
+          }
+
+          $md = @"
+          ${{github.event.release.body}}
+          "@
+          Write-Verbose "md=$md"
+
+          Write-Debug "Converting to HTML"
+          $html = ($md | ConvertFrom-Markdown).Html
+
+          Write-Debug "Outputting HTML"
+          @"
+          html<<EOF
+          $html
+          EOF
+          "@ >> $env:GITHUB_OUTPUT
+
+      - name: Echo
+        shell: pwsh
+        run: |
+          echo @"
+          ${{steps.convert-md-to-html.outputs.html}}
+          "@

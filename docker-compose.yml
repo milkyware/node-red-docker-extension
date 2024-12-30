@@ -1,0 +1,15 @@
+version: '3'
+
+volumes:
+  nodered_data:
+
+services:
+  nodered:
+    image: nodered/node-red:latest
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+    ports:
+      - 41880:1880
+    volumes:
+      - nodered_data:/data
