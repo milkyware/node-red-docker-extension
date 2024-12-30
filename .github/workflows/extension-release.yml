@@ -1,0 +1,129 @@
+name: Extension Release
+
+on:
+  release:
+    types:
+      - published
+
+env:
+  IMAGE_NAME: "node-red-docker-extension"
+  DOCKERHUB_REGISTRY: "docker.io"
+  GITHUB_REGISTRY: "ghcr.io"
+
+jobs:
+  # Push image to GitHub Packages.
+  # See also https://docs.docker.com/docker-hub/builds/
+  build:
+    name: Build image and push
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Tag Name
+        if:  github.event.release.tag_name != ''
+        run: echo ${{github.event.release.tag_name}}
+
+      - name: Repository Owner Lower
+        id: repository_owner_lower
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: "${{github.repository_owner}}"
+
+      - name: Convert Release Body to HTML
+        id: convert-release-body-to-html
+        shell: pwsh
+        run: |
+          $InformationPreference = 'Continue'
+          if ($env:ACTIONS_RUNNER_DEBUG)
+          {
+            $DebugPreference = 'Continue'
+            $VerbosePreference = 'Continue'
+          }
+
+          $dict = [System.Collections.Generic.Dictionary[[string],[string]]]::new()
+          $dict.Add("changelog", @"
+          ${{github.event.release.body}}
+          "@)
+          $readme = Get-Content -Path ./README.md -Raw
+          $dict.Add("description", $readme)
+
+          foreach ($kvp in $dict.GetEnumerator())
+          {
+            Write-Debug "Converting to HTML"
+            $html = ($kvp.Value | ConvertFrom-Markdown).Html
+
+            Write-Debug "Minifying HTML"
+            $html = $html -replace "(`r`n|`r|`n)", ""
+            
+            Write-Debug "Outputting HTML"
+            "$($kvp.Key)=$html" >> $env:GITHUB_OUTPUT
+          }
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Install Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+        with: 
+          version: latest
+
+      - name: Docker Metadata
+        id: docker-metadata
+        uses: docker/metadata-action@v5
+        with:
+          flavor: |
+            latest=auto
+          images: |
+            ${{env.DOCKERHUB_REGISTRY}}/${{github.repository_owner}}/${{env.IMAGE_NAME}}
+            ${{env.GITHUB_REGISTRY}}/${{github.repository_owner}}/${{env.IMAGE_NAME}}
+          tags: |
+            type=ref,event=tag
+            type=sha
+            type=semver,pattern={{major}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{version}}
+      
+      - name: Docker Hub login
+        id: dockerhub-login
+        uses: docker/login-action@v3
+        with: 
+          registry: "${{env.DOCKERHUB_REGISTRY}}"
+          username: "${{secrets.DOCKERHUB_USERNAME}}"
+          password: "${{secrets.DOCKERHUB_PASSWORD}}"
+          
+      - name: GHCR login
+        id: github-login
+        uses: docker/login-action@v3
+        with: 
+          registry: "${{env.GITHUB_REGISTRY}}"
+          username: "${{github.repository_owner}}"
+          password: "${{github.token}}"
+
+      - name: Docker build and push
+        id: build-push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64,linux/amd64
+          push: true
+          tags: ${{steps.docker-metadata.outputs.tags}}
+          build-args: |
+            CHANGELOG=${{steps.convert-release-body-to-html.outputs.changelog}}
+            DESCRIPTION=${{steps.convert-release-body-to-html.outputs.description}}
+
+      - name: Docker Hub Description
+        id: docker-description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_PASSWORD}}
+          repository: ${{github.repository_owner}}/${{env.IMAGE_NAME}}
+          readme-filepath: ./README.md
+        
+      - name: Image digest
+        run: echo ${{steps.build-push.outputs.digest}}
+
+      
