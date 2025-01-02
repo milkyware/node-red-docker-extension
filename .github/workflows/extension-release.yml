@@ -75,7 +75,6 @@ jobs:
           images: |
             ${{env.DOCKERHUB_REGISTRY}}/${{github.repository_owner}}/${{env.IMAGE_NAME}}
             ${{env.GITHUB_REGISTRY}}/${{github.repository_owner}}/${{env.IMAGE_NAME}}
-            ${{env.QUAY_REGISTRY}}/${{github.repository_owner}}/${{env.IMAGE_NAME}}
           tags: |
             type=ref,event=tag
             type=sha
