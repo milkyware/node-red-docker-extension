@@ -119,6 +119,6 @@ jobs:
           readme-filepath: ./README.md
         
       - name: Image digest
-        run: echo ${{steps.docker_build.outputs.digest}}
+        run: echo ${{steps.build-push.outputs.digest}}
 
       
