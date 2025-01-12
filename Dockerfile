@@ -18,7 +18,7 @@ LABEL org.opencontainers.image.title="Docker Extension for Node-RED" \
     com.docker.extension.detailed-description="$DESCRIPTION" \
     com.docker.extension.publisher-url="https://github.com/milkyware/node-red-docker-extension" \
     com.docker.extension.screenshots="[ \
-    {\"url\": \"https://raw.githubusercontent.com/milkyware/node-red-docker-extension/refs/heads/main/screenshots/screenshot1.png\", \"alt\": \"screenshot1\"} \
+    {\"url\": \"https://raw.githubusercontent.com/milkyware/node-red-docker-extension/refs/heads/main/images/image1.png\", \"alt\": \"screenshot1\"} \
     ]"
 
 COPY ui ui
