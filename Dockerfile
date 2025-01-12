@@ -13,7 +13,7 @@ LABEL org.opencontainers.image.title="Docker Extension for Node-RED" \
     ]" \
     com.docker.desktop.extension.api.version=">= 0.3.4" \
     com.docker.extension.categories="javascript,low-code,flow-based-programming" \
-    com.docker.desktop.extension.icon=https://github.com/milkyware/node-red-docker-extension/blob/bcfc1ea776422d78ece65d95b28655cb66f06e4f/icon.svg \
+    com.docker.desktop.extension.icon=https://raw.githubusercontent.com/milkyware/node-red-docker-extension/bcfc1ea776422d78ece65d95b28655cb66f06e4f/icon.svg \
     com.docker.extension.changelog="$CHANGELOG" \
     com.docker.extension.detailed-description="$DESCRIPTION" \
     com.docker.extension.publisher-url="https://github.com/milkyware/node-red-docker-extension" \
